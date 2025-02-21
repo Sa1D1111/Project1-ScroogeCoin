@@ -23,7 +23,7 @@ public class TxHandler {
         /* (1) ALL OUTPUTS CLAIMED BY TX ARE IN THE CURRENT UTXO POOL */
         
         /* (2) SIGNATURES ON EACH INPUT OF TX ARE VALID */
-        for (int i = 0 ; i < tx.numInputs() ; i++) { if (!rsaKey.verifySignature(tx.getRawDataToSign(i), tx.getInput(i).signature)) { return false ; } } ;
+        //for (int i = 0 ; i < tx.numInputs() ; i++) { if (!verifySignature(tx.getRawDataToSign(i), tx.getInput(i).signature)) { return false ; } } ;
 
         /* (3) NO UTXO IS CLAIMED MULTIPLE TIMES BY TX */
 
