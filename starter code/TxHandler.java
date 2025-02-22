@@ -70,9 +70,40 @@ public class TxHandler {
      * returning a mutually valid array of accepted transactions, 
      * and updating the current UTXO pool as appropriate.
      */
-    public Transaction[] handleTxs(Transaction[] possibleTxs) {
-        // IMPLEMENT THIS
-        return null; // RETURN A MUTUALLY VALID TRANSACTION SET OF MAXIMAL SIZE
-    }
+    public Transaction[] handleTxs(Transaction[] possibleTxs) 
+    {
+        if (possibleTxs == null) { return new Transaction[0] ; } // Return an empty array if possibleTxs is null
 
-} 
+        ArrayList<Transaction> acceptedTxs = new ArrayList<>();
+        
+        for (Transaction tx : possibleTxs) 
+        {
+            if (tx == null) { continue ; } // Skip null transactions if any exist in the array
+            if (tx.getInputs() == null || tx.getOutputs() == null) { continue ; } // Skip transactions with null inputs or outputs
+
+            if (isValidTx(tx)) 
+            {
+                acceptedTxs.add(tx) ; // add the accepted transaction to the list
+                
+                /* REMOVE CONSUMED COIN FROM POOL */
+                ArrayList<Transaction.Input> inputs = tx.getInputs() ; 
+                for (Transaction.Input input : inputs) 
+                { 
+                    UTXO spentUTXO = new UTXO(input.prevTxHash, input.outputIndex) ; // create UTXO from input
+                    utxoPool.removeUTXO(spentUTXO) ; // remove spent UTXO from pool
+                }
+
+                /* ADD GENERATED COIN TO POOL */
+                ArrayList<Transaction.Output> outputs = tx.getOutputs() ; 
+                for (int i = 0 ; i < tx.numOutputs() ; i++)
+                {
+                    Transaction.Output output = outputs.get(i) ; 
+                    UTXO newUTXO = new UTXO(tx.getHash(), i) ; // create new UTXO using transaction hash and output index
+                    utxoPool.addUTXO(newUTXO, output) ; // add new UTXO to pool
+                }
+            }
+        }
+        /* CONVERT LIST OF VALID TRANSACTIONS TO ARRAY AND RETURN */
+        return acceptedTxs.toArray(new Transaction[0]); // Return accepted transactions as array
+    }
+}
