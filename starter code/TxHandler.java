@@ -68,56 +68,40 @@ public class TxHandler {
      * returning a mutually valid array of accepted transactions, 
      * and updating the current UTXO pool as appropriate.
      */
-public Transaction[] handleTxs(Transaction[] possibleTxs) {
-    if (possibleTxs == null) {
-        return new Transaction[0]; // Return an empty array if possibleTxs is null
-    }
+    public Transaction[] handleTxs(Transaction[] possibleTxs) 
+    {
+        if (possibleTxs == null) { return new Transaction[0] ; } // Return an empty array if possibleTxs is null
 
-    Set<UTXO> usedUTXOs = new HashSet<>();
-    ArrayList<Transaction> acceptedTxs = new ArrayList<>();
-
-    for (Transaction tx : possibleTxs) {
-        if (tx == null) {
-            continue; // Skip null transactions if any exist in the array
-        }
+        ArrayList<Transaction> acceptedTxs = new ArrayList<>();
         
-        // Check if inputs and outputs are not null
-        if (tx.getInputs() == null || tx.getOutputs() == null) {
-            continue; // Skip transactions with null inputs or outputs
-        }
+        for (Transaction tx : possibleTxs) 
+        {
+            if (tx == null) { continue ; } // Skip null transactions if any exist in the array
+            if (tx.getInputs() == null || tx.getOutputs() == null) { continue ; } // Skip transactions with null inputs or outputs
 
-        if (isValidTx(tx)) {
-            boolean isDoubleSpending = false;
-
-            // Check for double-spending of UTXOs
-            for (Transaction.Input input : tx.getInputs()) {
-                UTXO utxo = new UTXO(input.prevTxHash, input.outputIndex);
-                if (usedUTXOs.contains(utxo)) {
-                    isDoubleSpending = true;
-                    break;
-                }
-            }
-
-            // If no double-spending, accept the transaction
-            if (!isDoubleSpending) {
-                acceptedTxs.add(tx);
-
-                // Update UTXO pool by removing spent UTXOs and adding new ones
-                for (int i = 0; i < tx.numInputs(); i++) {
-                    Transaction.Input input = tx.getInputs().get(i);
-                    UTXO spentUTXO = new UTXO(input.prevTxHash, input.outputIndex);
-                    utxoPool.removeUTXO(spentUTXO); // Remove spent UTXO from the pool
+            if (isValidTx(tx)) 
+            {
+                acceptedTxs.add(tx) ; // add the accepted transaction to the list
+                
+                /* REMOVE CONSUMED COIN FROM POOL */
+                ArrayList<Transaction.Input> inputs = tx.getInputs() ; 
+                for (Transaction.Input input : inputs) 
+                { 
+                    UTXO spentUTXO = new UTXO(input.prevTxHash, input.outputIndex) ; // create UTXO from input
+                    utxoPool.removeUTXO(spentUTXO) ; // remove spent UTXO from pool
                 }
 
-                for (int i = 0; i < tx.numOutputs(); i++) {
-                    Transaction.Output output = tx.getOutputs().get(i);
-                    UTXO newUTXO = new UTXO(tx.getHash(), i); // Create new UTXO
-                    utxoPool.addUTXO(newUTXO, output); // Add new UTXO to the pool
+                /* ADD GENERATED COIN TO POOL */
+                ArrayList<Transaction.Output> outputs = tx.getOutputs() ; 
+                for (int i = 0 ; i < tx.numOutputs() ; i++)
+                {
+                    Transaction.Output output = outputs.get(i) ; 
+                    UTXO newUTXO = new UTXO(tx.getHash(), i) ; // create new UTXO using transaction hash and output index
+                    utxoPool.addUTXO(newUTXO, output) ; // add new UTXO to pool
                 }
             }
         }
+        /* CONVERT LIST OF VALID TRANSACTIONS TO ARRAY AND RETURN */
+        return acceptedTxs.toArray(new Transaction[0]); // Return accepted transactions as array
     }
-
-    return acceptedTxs.toArray(new Transaction[0]); // Return accepted transactions as array
 }
-
