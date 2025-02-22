@@ -1,6 +1,6 @@
-import java.util.HashSet;
-import java.util.Set;
-import java.util.ArrayList;
+import java.util.HashSet ;
+import java.util.Set ;
+import java.util.ArrayList ;
 
 public class TxHandler {
     /* Creates a public ledger whose current UTXOPool (collection of unspent 
@@ -72,7 +72,7 @@ public class TxHandler {
     {
         if (possibleTxs == null) { return new Transaction[0] ; } // Return an empty array if possibleTxs is null
 
-        ArrayList<Transaction> acceptedTxs = new ArrayList<>();
+        ArrayList<Transaction> acceptedTxs = new ArrayList<>() ;
         
         for (Transaction tx : possibleTxs) 
         {
@@ -102,6 +102,6 @@ public class TxHandler {
             }
         }
         /* CONVERT LIST OF VALID TRANSACTIONS TO ARRAY AND RETURN */
-        return acceptedTxs.toArray(new Transaction[0]); // Return accepted transactions as array
+        return acceptedTxs.toArray(new Transaction[0]) ; // Return accepted transactions as array
     }
 }
